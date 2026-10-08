@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp AI Chatbot — Concept Demo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b141a; color: #e9edef; line-height: 1.6; }
+  .badge { display: inline-block; background: #f59e0b; color: #0b141a; font-weight: 700; font-size: 12px; letter-spacing: 1px; padding: 4px 12px; border-radius: 999px; margin-bottom: 12px; }
+  header { text-align: center; padding: 48px 20px 24px; max-width: 900px; margin: 0 auto; }
+  header h1 { font-size: 32px; margin-bottom: 8px; }
+  header h1 span { color: #25d366; }
+  header p { color: #8696a0; max-width: 640px; margin: 0 auto; }
+  .wrap { display: flex; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px 20px 48px; flex-wrap: wrap; justify-content: center; }
+  .phone { width: 340px; background: #111b21; border-radius: 36px; padding: 14px; border: 1px solid #2a3942; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+  .screen { background: #0b141a; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column; height: 580px; background-image: radial-gradient(#111b21 1px, transparent 1px); background-size: 22px 22px; }
+  .wa-head { background: #1f2c34; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: #25d366; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #0b141a; }
+  .wa-head strong { display: block; font-size: 15px; }
+  .wa-head small { color: #25d366; font-size: 12px; }
+  #chat { flex: 1; overflow-y: auto; padding: 16px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .msg { max-width: 82%; padding: 8px 12px; border-radius: 12px; font-size: 14px; line-height: 1.45; animation: pop .25s ease; position: relative; }
+  @keyframes pop { from { transform: translateY(6px); opacity: 0; } }
+  .msg.in { background: #1f2c34; align-self: flex-start; border-top-left-radius: 2px; }
+  .msg.out { background: #005c4b; align-self: flex-end; border-top-right-radius: 2px; }
+  .msg .meta { display: block; font-size: 10px; color: #8696a0; text-align: right; margin-top: 4px; }
+  .msg .ticks { color: #53bdeb; }
+  .msg .tag { display: block; font-size: 10px; color: #8696a0; margin-top: 4px; letter-spacing: .4px; }
+  .typing { color: #8696a0; font-size: 13px; font-style: italic; align-self: flex-start; background: #1f2c34; padding: 8px 12px; border-radius: 12px; }
+  .suggest { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; background: #111b21; }
+  .suggest button { background: transparent; border: 1px solid #25d366; color: #25d366; border-radius: 999px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+  .suggest button:hover { background: #25d366; color: #0b141a; }
+  .inputrow { display: flex; background: #111b21; padding: 8px; gap: 8px; }
+  .inputrow input { flex: 1; background: #1f2c34; border: none; color: #e9edef; padding: 12px 16px; font-size: 14px; outline: none; border-radius: 999px; }
+  .inputrow button { background: #25d366; color: #0b141a; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 18px; cursor: pointer; font-weight: 700; }
+  .panel { flex: 1; min-width: 300px; max-width: 620px; }
+  .panel h2 { font-size: 22px; margin: 8px 0 12px; }
+  .flow { background: #111b21; border: 1px solid #2a3942; border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+  .step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+  .step:last-child { margin-bottom: 0; }
+  .n { background: #25d366; color: #0b141a; font-weight: 800; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .step p { font-size: 14px; color: #aebac1; }
+  .step p b { color: #fff; }
+  code.inline { background: #0b141a; padding: 2px 8px; border-radius: 6px; font-size: 13px; color: #25d366; }
+  .dl { display: inline-block; margin-top: 8px; background: #25d366; color: #0b141a; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; }
+  footer { text-align: center; padding: 24px 20px 48px; color: #667781; font-size: 13px; max-width: 700px; margin: 0 auto; }
+  footer a { color: #25d366; }
+  .menu-card { background: #1f2c34; border-radius: 10px; padding: 10px; margin-top: 6px; font-size: 13px; }
+  .menu-card div { display: flex; justify-content: space-between; padding: 3px 0; }
+</style>
+</head>
+<body>
+<header>
+  <div class="badge">CONCEPT DEMO — SIMULATED RESPONSES</div>
+  <h1>WhatsApp AI Chatbot <span>— n8n + AI</span></h1>
+  <p>Try it: tap a suggestion or type. This simulates a WhatsApp Business chatbot for a restaurant — menu/catalog, table booking, hours, and human handoff. In production this runs on the WhatsApp Business API + an n8n workflow + an LLM. No live WhatsApp backend is connected — every reply here is a scripted simulation of the production behavior.</p>
+</header>
+
+<div class="wrap">
+  <div class="phone">
+    <div class="screen">
+      <div class="wa-head">
+        <div class="avatar">S</div>
+        <div><strong>Spice Route Restaurant</strong><small>online · replies instantly</small></div>
+      </div>
+      <div id="chat"></div>
+      <div class="suggest" id="suggest"></div>
+      <div class="inputrow">
+        <input id="inp" type="text" placeholder="Message" autocomplete="off">
+        <button onclick="sendUser()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>How the production version works</h2>
+    <div class="flow">
+      <div class="step"><div class="n">1</div><p><b>WhatsApp Business API webhook</b> — every incoming message hits an n8n webhook with the sender, text, and message type (text, button reply, list selection).</p></div>
+      <div class="step"><div class="n">2</div><p><b>n8n intent router</b> — classifies intent: menu/catalog, booking, hours/location, or human. Booking intent checks real table availability before confirming.</p></div>
+      <div class="step"><div class="n">3</div><p><b>LLM with business knowledge</b> — replies are drafted with the menu, hours, and policies as context; guardrails prevent invented dishes, prices, or slots.</p></div>
+      <div class="step"><div class="n">4</div><p><b>Rich WhatsApp replies</b> — interactive buttons and lists (menu categories, time slots) sent back through the API; bookings land in the reservation sheet/CRM.</p></div>
+      <div class="step"><div class="n">5</div><p><b>After-hours + handoff</b> — outside hours the bot takes the request and queues it; on complaints or "call me" it alerts staff with the full transcript.</p></div>
+    </div>
+    <h2>n8n workflow blueprint</h2>
+    <div class="flow">
+      <p style="font-size:14px;color:#aebac1;margin-bottom:6px;">Import-ready workflow: <code class="inline">WA webhook → Switch(intent) → OpenAI → WA reply → Sheets/CRM log</code>, with after-hours branch and staff-alert escalation.</p>
+      <a class="dl" href="workflow.json" download>Download workflow.json</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Honest note: this page is a <b>concept demo</b> — replies are scripted simulations of the production chatbot's behavior, built to show approach, not a live deployment. Built by <a href="https://awaissattar-portfolio.vercel.app/">Awais Sattar</a> · AI Automation &amp; GoHighLevel.
+</footer>
+
+<script>
+const chat = document.getElementById('chat');
+const suggestBox = document.getElementById('suggest');
+const inp = document.getElementById('inp');
+let bookingStage = 0;
+
+function now() { const d = new Date(); return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0'); }
+function addMsg(text, who, tag) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + who;
+  const meta = who === 'out' ? '<span class="meta">' + now() + ' <span class="ticks">✓✓</span></span>' : '<span class="meta">' + now() + '</span>';
+  d.innerHTML = text + meta + (tag ? '<span class="tag">' + tag + '</span>' : '');
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+function typing(cb) {
+  const t = document.createElement('div');
+  t.className = 'typing'; t.textContent = 'typing…';
+  chat.appendChild(t); chat.scrollTop = chat.scrollHeight;
+  setTimeout(() => { t.remove(); cb(); }, 900);
+}
+const suggestions = ["What's on the menu?", "Book a table for Friday", "What are your hours?", "Talk to a person"];
+function renderSuggest() {
+  suggestBox.innerHTML = '';
+  suggestions.forEach(s => {
+    const b = document.createElement('button');
+    b.textContent = s;
+    b.onclick = () => { inp.value = s; sendUser(); };
+    suggestBox.appendChild(b);
+  });
+}
+const MENU = '<div class="menu-card"><div><span>🍛 Chicken Biryani</span><b>Rs 380</b></div><div><span>🥘 Chicken Karahi (half)</span><b>Rs 650</b></div><div><span>🍢 Seekh Kabab (4 pc)</span><b>Rs 420</b></div><div><span>🍕 Chicken Tikka Pizza</span><b>Rs 899</b></div><div><span>🥤 Fresh Lime Soda</span><b>Rs 180</b></div></div>';
+function brain(raw) {
+  const t = raw.toLowerCase();
+  if (bookingStage === 1) {
+    bookingStage = 0;
+    return ["Done! Table for " + raw.trim() + " is reserved for Friday. You'll get a WhatsApp reminder 2 hours before. See you then! 🍽️", "ACTION: reservation written to bookings sheet (simulated)"];
+  }
+  if (/^(hi|hello|hey|salam|assalam)/.test(t) && t.length < 30)
+    return ["Hello! Welcome to Spice Route 🌶️ I can show you the menu, book a table, or answer questions. What would you like?", "INTENT: greeting"];
+  if (t.includes('menu') || t.includes('food') || t.includes('dish') || t.includes('eat') || t.includes('price'))
+    return ["Here's today's menu:" + MENU + "Anything you'd like to order for dine-in, or shall I book you a table?", "INTENT: catalog → menu card (simulated)"];
+  if (t.includes('book') || t.includes('table') || t.includes('reserve') || t.includes('seat')) {
+    bookingStage = 1;
+    return ["Great! Friday availability: 7:00 PM, 8:30 PM, 10:00 PM. How many guests, and which slot?", "INTENT: booking → live availability check (simulated)"];
+  }
+  if (t.includes('hour') || t.includes('open') || t.includes('close') || t.includes('timing') || t.includes('location') || t.includes('address') || t.includes('where'))
+    return ["We're open daily 12:00 PM – 11:30 PM. Find us at Main Boulevard, Gulberg — tap to navigate: 📍 maps link. Kitchen closes at 11:00 PM.", "INTENT: hours/location"];
+  if (t.includes('person') || t.includes('human') || t.includes('call') || t.includes('manager') || t.includes('complaint') || t.includes('staff'))
+    return ["Connecting you to our floor manager now — he'll reply here within 10 minutes. I've shared our full chat so you don't repeat yourself. 🙏", "ACTION: staff alert with transcript (simulated)"];
+  if (t.includes('thank') || t.includes('shukriya'))
+    return ["You're welcome! Enjoy your meal! 😊", "INTENT: closing"];
+  if (t.includes('deliver') || t.includes('order'))
+    return ["We deliver within 5 km via our own riders (Rs 150 fee, ~40 min). Share your address and I'll place the order — or type 'menu' to see dishes first.", "INTENT: delivery"];
+  return ["Got it — to help you faster: type 'menu' for dishes, 'book' for a table, or 'hours' for timings. Or ask me anything!", "INTENT: low confidence → guided options"];
+}
+function sendUser() {
+  const v = inp.value.trim();
+  if (!v) return;
+  addMsg(v, 'out');
+  inp.value = '';
+  typing(() => {
+    const [reply, tag] = brain(v);
+    addMsg(reply, 'in', tag);
+  });
+}
+inp.addEventListener('keydown', e => { if (e.key === 'Enter') sendUser(); });
+renderSuggest();
+setTimeout(() => addMsg("Hello! 👋 Welcome to <b>Spice Route Restaurant</b>. I'm the AI assistant — ask me about the menu, book a table, or anything else!", 'in', 'TRIGGER: inbound WA message → n8n (simulated)'), 600);
+</script>
+</body>
+</html>
